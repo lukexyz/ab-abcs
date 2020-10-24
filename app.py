@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as stc 
-import time, random
+import time
+from random import random
 import numpy as np
 import pandas as pd
 import altair as alt
@@ -36,28 +37,56 @@ def main():
 
     with col1: 
         st.header("📺 Design A")
-        x = st.slider('True conversion rate',0., 1., 0.41)
-        x
+        a_conversion = st.slider('True Conversion Rate',0., 1., 0.41)
 
     with col2:
         st.header("📺 Design B")
-        y = st.slider('True conversion rate',0., 1., 0.48)
-        y
+        b_conversion = st.slider('True Conversion Rate',0., 1., 0.48)
 
-    st.text("Below columns")
+    run = st.checkbox('Run')
 
-    # ========================== altair ============================== #
-    df1 = create_df(size=(1,5))
-    my_table = st.table(df1)
+    # Setup empty
+    dx = pd.DataFrame([[a_conversion, b_conversion] for x in range(10)], columns=["squared", "cubed"])
+    dx.index.name = "x"
+    data = dx.reset_index().melt('x')
+    lines = alt.Chart(data).mark_line().encode(
+        x='x',
+        y='value',
+        color='variable')
+    line_plot = st.altair_chart(lines, use_container_width=True)
 
-    if st.button('add rows'):
-        df2 = pd.DataFrame(np.random.randn(3, 5),
-                    columns=(f'col{i}' for i in range(5)))
-        my_table.add_rows(df2)
 
+    n_samples = st.number_input('Samples', min_value=0, max_value=1000, value=100)
+    n_experiments = st.number_input('Experiments (how many times to run?)', min_value=0, max_value=1000, value=10)
 
-    st.line_chart(df1)
+    res_a, res_b = [], []
 
+    if run: 
+        for i in range(n_experiments):
+            A = [random() for x in range(n_samples)]
+            B = [random() for x in range(n_samples)]
+            df = pd.DataFrame()
+            df['A'] = pd.Series(A)
+            df['A_conv'] = (df['A']>(1-a_conversion)).astype(int)
+            df['B'] = pd.Series(B)
+            df['B_conv'] = (df['B']>(1-b_conversion)).astype(int)
+            res_a.append(df.A_conv.mean())
+            res_b.append(df.B_conv.mean())
+
+            dx = pd.DataFrame()
+            dx[f'A_res'] = pd.Series(res_a)
+            dx[f'B_res'] = pd.Series(res_b)
+
+            dx.index.name = "x"
+            dx = dx.reset_index().melt('x') # nice shape for altair
+            lines = alt.Chart(dx).mark_line().encode(
+                x='x',
+                y='value',
+                color='variable')
+            
+            line_plot.altair_chart(lines, use_container_width=True)
+            wait_period = 2 / n_experiments
+            time.sleep(wait_period) 
 
     
 
