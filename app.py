@@ -6,14 +6,6 @@ import numpy as np
 import pandas as pd
 import altair as alt
 from altair import Chart, X, Y, Axis, SortField, OpacityValue
-alt.renderers.set_embed_options(actions=False)
-
-
-@st.cache(persist=True) # persist cache on disk
-def create_df(size):
-    df = pd.DataFrame(np.random.randn(size[0], size[1]),
-        columns=(f'col{i}' for i in range(size[1])))
-    return df
 
 
 def main():
@@ -23,6 +15,7 @@ def main():
         layout="centered",             # Can be "centered" or "wide". In the future also "dashboard", etc.
         initial_sidebar_state="auto")  # Can be "auto", "expanded", "collapsed"
 
+    # ======================= Nav Bar  ==================== #
     nav = 1
     part1, part2, part3 = st.beta_columns([1, 1, 1])
     with part1:  # excuse hacky whitespace (alt+255) alignment 
@@ -33,7 +26,7 @@ def main():
         if st.button('💠 Part III: P-values             '):    nav = 2
     st.markdown('---')
 
-    # ================== Using st.beta_columns ================== #
+    # ================== AB Test Sliders  ================== #
     col1, col2 = st.beta_columns([1, 1]) # first column 4x the size of second
 
     with col1: 
@@ -46,7 +39,7 @@ def main():
     st.write('')
     st.write('')
 
-    # Setup placeholder chart
+    # ============== Setup placeholder chart =============== #
     dx = pd.DataFrame([[a_conversion, b_conversion] for x in range(10)], columns=["A_Conv", "B_Conv"])
     dx.index.name = "x"
     y_max = max([a_conversion,b_conversion])+0.15
@@ -64,10 +57,10 @@ def main():
 
     line_plot = st.altair_chart(lines+labels, use_container_width=True)
 
-    # User inputs
+    # ==================== User inputs ==================== #
     n_samples = st.number_input('Samples', min_value=0, max_value=1000, value=100)
     n_experiments = st.number_input('Iterations (how many times to run?)', min_value=0, max_value=1000, value=10)
-    run = st.checkbox('Auto Run')
+    run = st.checkbox('Run')
    
     res_a, res_b = [], []
 
@@ -103,9 +96,14 @@ def main():
                 opacity=alt.value(0.4),
                 size=alt.value(2))
 
+            # UPTO:
+            # labels = lines.mark_text(align='left', baseline='middle', dx=3).encode(
+            #     alt.X('x:Q', aggregate='max'),
+            #     text='value:Q')
+            labels = lines.mark_text(align='left', baseline='middle', dx=3).encode()
 
 
-            line_plot.altair_chart(lines + rule, use_container_width=True)
+            line_plot.altair_chart(lines + rule + labels, use_container_width=True)
             if n_experiments < 20: wait_period = 0.05
             else: wait_period = 1 / n_experiments
             time.sleep(wait_period) 
