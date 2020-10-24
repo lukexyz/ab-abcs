@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import altair as alt
 from altair import Chart, X, Y, Axis, SortField, OpacityValue
+alt.renderers.set_embed_options(actions=False)
 
 
 @st.cache(persist=True) # persist cache on disk
@@ -42,29 +43,33 @@ def main():
     with col2:
         st.header("📺 Design B")
         b_conversion = st.slider('True Conversion Rate',0., 1., 0.48)
+    st.write('')
+    st.write('')
 
-    
-
-    # Setup empty chart
+    # Setup placeholder chart
     dx = pd.DataFrame([[a_conversion, b_conversion] for x in range(10)], columns=["A_Conv", "B_Conv"])
     dx.index.name = "x"
     y_max = max([a_conversion,b_conversion])+0.15
+    y_min = min([a_conversion,b_conversion])-0.30
     data = dx.reset_index().melt('x')
+
     lines = alt.Chart(data).mark_line().encode(
         x=alt.X('x', title='Iteration', axis=alt.Axis(tickMinStep=1)),
-        y=alt.Y('value', title='Conversion', scale=alt.Scale(domain=[0, y_max])),
+        y=alt.Y('value', title='Conversion', scale=alt.Scale(domain=[y_min, y_max])),
         color=alt.Color('variable', title=''))
-    line_plot = st.altair_chart(lines, use_container_width=True)
-
     
+    labels = lines.mark_text(align='left', baseline='middle', dx=3).encode(
+                alt.X('x:Q', aggregate='max'),
+                text='value:Q')
+
+    line_plot = st.altair_chart(lines+labels, use_container_width=True)
+
+    # User inputs
     n_samples = st.number_input('Samples', min_value=0, max_value=1000, value=100)
     n_experiments = st.number_input('Iterations (how many times to run?)', min_value=0, max_value=1000, value=10)
-    run = st.checkbox('Run')
-
-    
-    
+    run = st.checkbox('Auto Run')
+   
     res_a, res_b = [], []
-    
 
     if run: 
         for i in range(n_experiments):
@@ -84,12 +89,23 @@ def main():
 
             dx.index.name = "x"
             dx = dx.reset_index().melt('x') # nice shape for altair
+
+            base = alt.Chart(dx)
+
             lines = alt.Chart(dx).mark_line().encode(
                 x=alt.X('x', title='Iterations', axis=alt.Axis(tickMinStep=1)),
-                y=alt.Y('value', title='Conversion', scale=alt.Scale(domain=[0, y_max])),
+                y=alt.Y('value', title='Conversion', scale=alt.Scale(domain=[y_min, y_max])),
                 color=alt.Color('variable', title=''))
             
-            line_plot.altair_chart(lines, use_container_width=True)
+            rule = base.mark_rule(strokeDash=[5,3]).encode(
+                y='average(value)',
+                color=alt.Color('variable'),
+                opacity=alt.value(0.4),
+                size=alt.value(2))
+
+
+
+            line_plot.altair_chart(lines + rule, use_container_width=True)
             if n_experiments < 20: wait_period = 0.05
             else: wait_period = 1 / n_experiments
             time.sleep(wait_period) 
