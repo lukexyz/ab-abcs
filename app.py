@@ -21,39 +21,29 @@ def main():
         initial_sidebar_state="auto")  # Can be "auto", "expanded", "collapsed"
 
 
+    state = st_state._get_state()
+    nav = state.nav
 
     # ======================= Nav Bar  ==================== #
-    nav = 1
+    
     part1, part2, part3 = st.beta_columns([1, 1, 1])
 
-    pages = ['💠 Part I: Probability          ', 
-             '💠 Part II: Error                    ',
-             '💠 Part III: P-values             ']
+    pages = ['⚪ Part I: Probability          ', 
+             '⚪ Part II: Error                    ',
+             '⚪ Part III: P-values             ']
 
-    pages[nav] = pages[nav]+' Selected'
+    pages[nav] = '💿' + pages[nav][1:]
 
     with part1:  # excuse hacky whitespace (alt+255) for alignment 
-        if st.button(pages[0]): nav = 0
+        if st.button(pages[0]): state.nav = 0
     with part2:
-        if st.button(pages[1]): nav = 1
+        if st.button(pages[1]): state.nav = 1
     with part3:
-        if st.button(pages[2]): nav = 2
+        if st.button(pages[2]): state.nav = 2
     st.markdown('---')
 
     if nav == 0:
         st.text('part I')
-        
-        state = st_state._get_state()
-        pages = {
-            "Dashboard": st_state.page_dashboard,
-            "Settings": st_state.page_settings,
-        }
-
-        st.sidebar.title(":floppy_disk: Page states")
-        page = st.sidebar.radio("Select your page", tuple(pages.keys()))
-
-        # Display the selected page with the session state
-        pages[page](state)
 
         annotated_text("This ",
             ("is", "verb", "#8ef"),
@@ -69,7 +59,6 @@ def main():
 
 
     elif nav == 1: ######## PART II ############
-
         # ================== AB Test Sliders  ================== #
         col1, col2 = st.beta_columns([1, 1]) # first column 4x the size of second
 
