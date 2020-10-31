@@ -45,8 +45,10 @@ def main():
     
     if nav == 0:  ############ PART I ############
         
-        conversion_rate = st.number_input('Conversion Rate', value=0.2)
-        n_samples = st.number_input('Samples', value=20)
+        st.header('How do we know when an event has happened?')
+
+        conversion_rate = st.number_input('True Conversion Rate', value=0.2)
+        n_samples = st.number_input('People (n samples)', value=100)
 
         # ============== Setup placeholder chart =============== #
         res = []
@@ -111,26 +113,23 @@ def main():
 
             results_yes = df[df.converted=='Yes']
             results_no = df[df.converted=='No']
-            result_text_1 = f'Conversion Rate: {df.conv.mean():0.2f}'
+            result_text_1 = f'Conversion Rate = {df.conv.mean():0.2f}'
 
         if df.shape[0] >1:
-            annotated_text("Simulated results: ", 
+            annotated_text("Simulation Observation 👩‍🔬  ", 
                         (result_text_1, f"{len(results_yes)}/{df.shape[0]} converted", "#fea"))
 
         
 
-
-
-
-
-
     elif nav == 1: ############ PART II ############
+
+
         # ================== AB Test Sliders  ================== #
         col1, col2 = st.beta_columns([1, 1]) # first column 1x the size of second
 
         with col1: 
             st.header("📺 Variation A")   
-            a_conversion = st.slider('True Conversion Rate',0., 1., 0.41)
+            a_conversion = st.slider('True Conversion Rate',0., 1., 0.20)
 
         with col2:
             st.header("📺 Variation B")
@@ -157,13 +156,13 @@ def main():
         line_plot = st.altair_chart(lines+labels, use_container_width=True)
 
         # ==================== User inputs ==================== #
-        n_samples = st.number_input('Samples', min_value=0, max_value=5001, value=500)
+        n_samples = st.number_input('Samples', min_value=0, max_value=5001, value=200)
         n_experiments = st.number_input('Iterations (how many times to run the experiment?)', min_value=0, max_value=1000, value=20)
-        run = st.checkbox('Run')
+        run_p2 = st.checkbox('Run')
     
         res_a, res_b = [], []
 
-        if run: 
+        if run_p2: 
             for i in range(n_experiments):
                 A = [random() for x in range(n_samples)]
                 B = [random() for x in range(n_samples)]
@@ -221,6 +220,10 @@ def main():
                 if n_experiments < 20: wait_period = 0.05
                 else: wait_period = 1 / n_experiments
                 time.sleep(wait_period) 
+
+            if df.shape[0] >1:
+                annotated_text("Simulation ", 
+                            ("1/100", "x converted", "#fea"))
 
             st.text(f"Experiment failure: {d_res[d_res['B_Conv'] < d_res['A_Conv']].shape[0]}/{n_experiments} (false positives)")
     
