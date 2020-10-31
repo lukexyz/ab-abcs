@@ -22,19 +22,21 @@ def main():
 
 
     state = st_state._get_state()
+    
+    if state.nav is None: state.nav = 1
     nav = state.nav
 
     # ======================= Nav Bar  ==================== #
     
     part1, part2, part3 = st.beta_columns([1, 1, 1])
 
-    pages = ['⚪ Part I: Probability          ', 
-             '⚪ Part II: Error                    ',
-             '⚪ Part III: P-values             ']
+    pages = ['⚪ Part I: Probability     ', 
+             '⚪ Part II: Error          ',
+             '⚪ Part III: P-values      ']
 
     pages[nav] = '💿' + pages[nav][1:]
 
-    with part1:  # excuse hacky whitespace (alt+255) for alignment 
+    with part1: 
         if st.button(pages[0]): state.nav = 0
     with part2:
         if st.button(pages[1]): state.nav = 1
@@ -122,31 +124,44 @@ def main():
                 lines = alt.Chart(dx).mark_line().encode(
                     x=alt.X('x', title='Iterations', axis=alt.Axis(tickMinStep=1)),
                     y=alt.Y('value', title='Conversion', scale=alt.Scale(domain=[y_min, y_max])),
-                    color=alt.Color('variable', title=''))
+                    color=alt.Color('variable', title=''),
+                    tooltip = [alt.Tooltip('x:N'), alt.Tooltip('value:N')]
+                    )
                 
                 rule = base.mark_rule(strokeDash=[5,3]).encode(
                     y='average(value)',
                     color=alt.Color('variable'),
                     opacity=alt.value(0.4),
-                    size=alt.value(2))
+                    size=alt.value(2)
+                    )
+                
+                hover = alt.selection_single(
+                    fields=["x"],
+                    nearest=True,
+                    on="mouseover",
+                    empty="none",
+                    clear="mouseout"
+                )
 
-                # UPTO:
-                # labels = lines.mark_text(align='left', baseline='middle', dx=3).encode(
-                #     alt.X('x:Q', aggregate='max'),
-                #     text='value:Q')
+                tooltips = alt.Chart(dx).transform_pivot(
+                    "x", "value", groupby=["x"]
+                ).mark_rule().encode(
+                    x='x:Q',
+                    opacity=alt.condition(hover, alt.value(0.3), alt.value(0)),
+                    tooltip=["x:Q", "value:N"]
+                ).add_selection(hover)
+
                 labels = lines.mark_text(align='left', baseline='middle', dx=3).encode()
 
-
-                line_plot.altair_chart(lines + rule + labels, use_container_width=True)
+                line_plot.altair_chart(lines + rule + labels + tooltips, use_container_width=True)
                 if n_experiments < 20: wait_period = 0.05
                 else: wait_period = 1 / n_experiments
                 time.sleep(wait_period) 
 
             st.text(f"Experiment failure: {d_res[d_res['B_Conv'] < d_res['A_Conv']].shape[0]}/{n_experiments} (false positives)")
     
-    elif nav == 3: ######## PART III ############    
+    elif nav == 2: ######## PART III ############    
         st.text('part 3')
-
 
     # Mandatory to avoid rollbacks with widgets, must be called at the end of your app
     state.sync()
