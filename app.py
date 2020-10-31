@@ -46,7 +46,7 @@ def main():
     if nav == 0:  ############ PART I ############
         
         conversion_rate = st.number_input('Conversion Rate', value=0.2)
-        n_samples = st.number_input('Samples', value=10)
+        n_samples = st.number_input('Samples', value=20)
 
         # ============== Setup placeholder chart =============== #
         res = []
@@ -63,7 +63,8 @@ def main():
 
         hist = alt.Chart(df).mark_bar(size=40).encode(
             alt.X('count()'),
-            alt.Y("conv")
+            alt.Y("conv"),
+            
         ).properties(width=300, height=300)
 
         scatter_plot = st.altair_chart(scatter | hist, use_container_width=True)
@@ -80,26 +81,41 @@ def main():
 
                 scatter = alt.Chart(df.reset_index()).mark_circle(size=60).encode(
                     x=alt.X('index'),
-                    y=alt.Y('A')
+                    y=alt.Y('A'),
+                    color=alt.Color('converted', title='', legend=None)
                 ).properties(width=300, height=300)
+
+                x_max = max(df.converted.value_counts().values) 
 
                 hist = alt.Chart(df).mark_bar(size=40).encode(
-                    alt.X('count()'),
-                    alt.Y("conv")
+                    alt.X('count()', scale=alt.Scale(domain=[0, x_max], clamp=True)),
+                    alt.Y("conv"),
+                    color=alt.Color('converted', title='', legend=None)
                 ).properties(width=300, height=300)
 
-                scatter_plot.altair_chart(scatter | hist, use_container_width=False)
+                text = hist.mark_text(
+                    align='left', fontSize=12, 
+                    baseline='middle',
+                    dx = 3,
+                    color='black'  # Nudges text to right so it doesn't appear on top of the bar
+                ).encode(
+                    x='count():Q',
+                    text=alt.Text('count()', format='.0f')
+                )
+
+                scatter_plot.altair_chart(scatter | (hist + text), use_container_width=False)
 
                 if n_samples < 20: wait_period = 0.20
                 else: wait_period = 1 / n_samples
                 time.sleep(wait_period)
 
-                
+            results_yes = df[df.converted=='Yes']
+            results_no = df[df.converted=='No']
+            result_text_1 = f'Conversion Rate: {df.conv.mean():0.2f}'
 
-            st.write(f'mean: {df.conv.mean():0.2f} (n={len(df.conv)})')
-
-        annotated_text("Exploring intuitions around ",
-            ("AB", " Testing", "#8ef"))
+        if df.shape[0] >1:
+            annotated_text("Simulated results: ", 
+                        (result_text_1, f"{len(results_yes)}/{df.shape[0]} converted", "#fea"))
 
         
 
