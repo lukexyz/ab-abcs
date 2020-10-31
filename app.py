@@ -20,21 +20,19 @@ def main():
         layout="centered",             # Can be "centered" or "wide". In the future also "dashboard", etc.
         initial_sidebar_state="auto")  # Can be "auto", "expanded", "collapsed"
 
-
+    # load state object
     state = st_state._get_state()
-    
+
+    # ==================== Nav Bar  ==================== #
     if state.nav is None: state.nav = 1
     nav = state.nav
-
-    # ======================= Nav Bar  ==================== #
-    
     part1, part2, part3 = st.beta_columns([1, 1, 1])
 
-    pages = ['⚪ Part I: Probability     ', 
-             '⚪ Part II: Error          ',
-             '⚪ Part III: P-values      ']
+    pages = ['Part I: Probability     ', 
+             'Part II: Error          ',
+             'Part III: P-values      ']
 
-    pages[nav] = '💿' + pages[nav][1:]
+    pages[nav] = '⚪ ' + pages[nav]
 
     with part1: 
         if st.button(pages[0]): state.nav = 0
@@ -44,28 +42,78 @@ def main():
         if st.button(pages[2]): state.nav = 2
     st.markdown('---')
 
-    if nav == 0:
-        st.text('part I')
+    
+    if nav == 0:  ############ PART I ############
+        
+        conversion_rate = st.number_input('Conversion Rate', value=0.2)
+        n_samples = st.number_input('Samples', value=10)
 
-        annotated_text("This ",
-            ("is", "verb", "#8ef"),
-            " some ",
-            ("annotated", "adj", "#faa"),
-            ("text", "noun", "#afa"),
-            " for those of ",
-            ("you", "pronoun", "#fea"),
-            " who ",
-            ("like", "verb", "#8ef"),
-            " this sort of ",
-            ("thing", "noun", "#afa"))
+        # ============== Setup placeholder chart =============== #
+        res = []
+        df = pd.DataFrame()
+        df['A'] = pd.Series(res)
+        df['conv'] = (df['A']>(1-conversion_rate)).astype(int)
+        df = df.sort_values('conv')
+        df['converted'] = df['conv'].map({1:'Yes', 0:'No'})
+
+        scatter = alt.Chart(df).mark_circle(size=60).encode(
+            x=alt.X('converted'),
+            y=alt.Y('A')
+        ).properties(width=300, height=300)
+
+        hist = alt.Chart(df).mark_bar(size=40).encode(
+            alt.X('count()'),
+            alt.Y("conv")
+        ).properties(width=300, height=300)
+
+        scatter_plot = st.altair_chart(scatter | hist, use_container_width=True)
+        run_p1 = st.checkbox('Run')
+
+        if run_p1:
+            for i in range(n_samples):
+                res.append(random())
+                df = pd.DataFrame()
+                df['A'] = pd.Series(res)
+                df['conv'] = (df['A']>(1-conversion_rate)).astype(int)
+                df = df.sort_values('conv')
+                df['converted'] = df['conv'].map({1:'Yes', 0:'No'})
+
+                scatter = alt.Chart(df.reset_index()).mark_circle(size=60).encode(
+                    x=alt.X('index'),
+                    y=alt.Y('A')
+                ).properties(width=300, height=300)
+
+                hist = alt.Chart(df).mark_bar(size=40).encode(
+                    alt.X('count()'),
+                    alt.Y("conv")
+                ).properties(width=300, height=300)
+
+                scatter_plot.altair_chart(scatter | hist, use_container_width=False)
+
+                if n_samples < 20: wait_period = 0.20
+                else: wait_period = 1 / n_samples
+                time.sleep(wait_period)
+
+                
+
+            st.write(f'mean: {df.conv.mean():0.2f} (n={len(df.conv)})')
+
+        annotated_text("Exploring intuitions around ",
+            ("AB", " Testing", "#8ef"))
+
+        
 
 
-    elif nav == 1: ######## PART II ############
+
+
+
+
+    elif nav == 1: ############ PART II ############
         # ================== AB Test Sliders  ================== #
-        col1, col2 = st.beta_columns([1, 1]) # first column 4x the size of second
+        col1, col2 = st.beta_columns([1, 1]) # first column 1x the size of second
 
         with col1: 
-            st.header("📺 Variation A")
+            st.header("📺 Variation A")   
             a_conversion = st.slider('True Conversion Rate',0., 1., 0.41)
 
         with col2:
@@ -148,7 +196,7 @@ def main():
                 ).mark_rule().encode(
                     x='x:Q',
                     opacity=alt.condition(hover, alt.value(0.3), alt.value(0)),
-                    tooltip=["x:Q", "value:N"]
+                    tooltip=["x:Q", "value"]
                 ).add_selection(hover)
 
                 labels = lines.mark_text(align='left', baseline='middle', dx=3).encode()
@@ -163,7 +211,7 @@ def main():
     elif nav == 2: ######## PART III ############    
         st.text('part 3')
 
-    # Mandatory to avoid rollbacks with widgets, must be called at the end of your app
+    # Mandatory to avoid rollbacks with widgets, must be called at the end of app
     state.sync()
 
 if __name__ == '__main__':
