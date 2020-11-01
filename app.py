@@ -221,11 +221,14 @@ def main():
                 else: wait_period = 1 / n_experiments
                 time.sleep(wait_period) 
 
-            if df.shape[0] >1:
-                annotated_text("Simulation ", 
-                            ("1/100", "x converted", "#fea"))
+            results_text_2 = f"{d_res[d_res['B_Conv'] < d_res['A_Conv']].shape[0]}/{n_experiments}"
 
-            st.text(f"Experiment failure: {d_res[d_res['B_Conv'] < d_res['A_Conv']].shape[0]}/{n_experiments} (false positives)")
+            if df.shape[0] >1:
+                annotated_text("Experiment Results 👨‍🔬 ", 
+                            (results_text_2,
+                            "False positives", "#fea"))
+
+            st.text(f"Simulation failures: {d_res[d_res['B_Conv'] < d_res['A_Conv']].shape[0]}/{n_experiments} (false positives)")
     
     elif nav == 2: ######## PART III ############    
         st.text('part 3')
