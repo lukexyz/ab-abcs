@@ -28,11 +28,11 @@ def main():
     nav = state.nav
     part1, part2, part3 = st.beta_columns([1, 1, 1])
 
-    pages = ['Part I: Probability     ', 
-             'Part II: Error          ',
-             'Part III: P-values      ']
+    pages = ['⚪ Part I: Probability     ', 
+             '⚪ Part II: Error          ',
+             '⚪ Part III: P-values      ']
 
-    pages[nav] = '⚪ ' + pages[nav]
+    pages[nav] = '🔴 ' + pages[nav][2:]
 
     with part1: 
         if st.button(pages[0]): state.nav = 0
@@ -46,9 +46,9 @@ def main():
     if nav == 0:  ############ PART I ############
 
         st.header('👩‍🔬 Exploring Intuitions Around AB Testing')
-        st.write('An event is as simple as whether or not a user has clicked a button.')
+        st.write('Testing whether an event has happened, is as simple as tracking whether a user clicks a button.')
         st.image("img/click.JPG", width = 700)
-        st.write('In an AB test we want to measure the rate of an event happening. However we only observe the outcome of the experiment, not the ground truth behind it. ')
+        st.write('In an AB test we want to measure the rate of an event happening. However we only observe the outcomes of an experiment, not the ground truth behind it. ')
         st.write('For example, we may observe that 4/10 visitors click a button. How many clicks would we expect with 100 visitors?')
         
         st.header('🎲 Random Click Generator')
@@ -75,9 +75,8 @@ def main():
         ).properties(width=300, height=300)
 
         scatter_plot = st.altair_chart(scatter | hist, use_container_width=True)
-        run_p1 = st.checkbox('Run')
 
-        if run_p1:
+        if st.button('🔴 Run'):
             for i in range(n_samples):
                 res.append(random())
                 df = pd.DataFrame()
@@ -127,10 +126,11 @@ def main():
         
 
     elif nav == 1: ############ PART II ############
-        st.header("Testing with Variations") 
+        st.header("👩‍🔬 Testing with Variations") 
+        st.write('In an AB test, we wish to compare the performance of two design variations with the same function.')
         st.image("img/ab_traffic_bw.JPG", width = 700)
         st.write('When we measure the click-through rate of these two variations, we can calculate the observed conversion.')
-        st.write('When we simulate the true conversion rates, how frequently does the outcome represent the data?')
+        st.write('When we simulate the true conversion rates, how frequently does the outcome represent the truth? By running the experiment numerous times, we see how many false positives occur.\n\n')
 
         # ================== AB Test Sliders  ================== #
         col1, col2 = st.beta_columns([1, 1]) # first column 1x the size of second
@@ -166,11 +166,10 @@ def main():
         # ==================== User inputs ==================== #
         n_samples = st.number_input('Samples', min_value=0, max_value=5001, value=200)
         n_experiments = st.number_input('Iterations (how many times to run the experiment?)', min_value=0, max_value=1000, value=20)
-        run_p2 = st.checkbox('Run')
     
         res_a, res_b = [], []
 
-        if run_p2: 
+        if st.button('🔴 Run'):
             for i in range(n_experiments):
                 A = [random() for x in range(n_samples)]
                 B = [random() for x in range(n_samples)]
@@ -239,8 +238,9 @@ def main():
             st.text(f"Simulation failures: {d_res[d_res['B_Conv'] < d_res['A_Conv']].shape[0]}/{n_experiments} (false positives)")
     
     elif nav == 2: ######## PART III ############    
-        st.text('part 3')
-        st.text('The average number of false positives')
+        st.write('Part 3: Simulating statistical significance. The P-value is the probability of the result being a winner.')
+        st.info('The P-value tells you how much you can trust the result.')
+        st.write('In our simulation, how many times do false positives occur?')
 
         # ================== AB Test Sliders  ================== #
         col1, col2 = st.beta_columns([1, 1])
@@ -259,11 +259,10 @@ def main():
         n_experiments = st.number_input('Iterations (how many times to run the experiment?)', min_value=0, max_value=1000, value=100)
         simulations = st.number_input('Simulations (n × iterations)', min_value=0, max_value=1000, value=20)
 
-        run_p3 = st.checkbox('Run')
         x = []    
         res_a, res_b = [], []
 
-        if run_p3: 
+        if st.button('🔴 Run'):
             for i in range(simulations):
                 res_a, res_b = [], []
                 for j in range(n_experiments):
@@ -283,17 +282,17 @@ def main():
                 x.append(dx[dx['B_res'] < dx['A_res']].shape[0])
 
             res = pd.Series(x)
-            st.code(f'Given that we observe\n\tA_conversion = {a_conversion}\n\tB_conversion = {b_conversion}\n\t\twith n={n_samples} samples each\n\navg. over {simulations} simulations..\n')
+            st.code(f'Given that we observe\n\tA_conversion = {a_conversion}\n\tB_conversion = {b_conversion}\n\t\twith n={n_samples} samples each\n\nCalculating the average number of false positives over {simulations} simulations..\n')
             st.code(f'\tChance of A outperforming B: {res.mean():0.2f}% (false positives)\n')
 
 
-            if res.shape[0] >1:
+            if res.shape[0] >= 1:
                 annotated_text("Chance of A outperforming B 👩‍🔬  ", 
                             (f'{res.mean():0.2f}%',
                              f"(false positives)\n", "#fea"))
 
             #sns.distplot(res)
-            st.write('Output can be verified at https://abtestguide.com/bayesian/')
+            st.write('Output can be verified here \nhttps://abtestguide.com/calc/\n or here\nhttps://abtestguide.com/bayesian/')
 
     # Mandatory to avoid rollbacks with widgets, must be called at the end of app
     state.sync()
