@@ -238,7 +238,9 @@ def main():
             st.text(f"Simulation failures: {d_res[d_res['B_Conv'] < d_res['A_Conv']].shape[0]}/{n_experiments} (false positives)")
     
     elif nav == 2: ######## PART III ############    
-        st.write('Part 3: Simulating statistical significance. The P-value is the probability of the result being a winner.')
+        st.write('Part 3: Simulating statistical significance.')
+        st.write('P-value calculations assume that the null hypothesis is true and use that assumption to determine the likelihood of obtaining your observed sample data.')
+        st.write('In simpler terms, the P-value is the probability of the result being a winner.')
         st.info('The P-value tells you how much you can trust the result.')
         st.write('In our simulation, how many times do false positives occur?')
 
