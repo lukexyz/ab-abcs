@@ -44,11 +44,16 @@ def main():
 
     
     if nav == 0:  ############ PART I ############
-        
-        st.header('How do we know when an event has happened?')
 
+        st.header('👩‍🔬 Exploring Intuitions Around AB Testing')
+        st.write('An event is as simple as whether or not a user has clicked a button.')
+        st.image("img/click.JPG", width = 700)
+        st.write('In an AB test we want to measure the rate of an event happening. However we only observe the outcome of the experiment, not the ground truth behind it. ')
+        st.write('For example, we may observe that 4/10 visitors click a button. How many clicks would we expect with 100 visitors?')
+        
+        st.header('🎲 Random Click Generator')
         conversion_rate = st.number_input('True Conversion Rate', value=0.2)
-        n_samples = st.number_input('People (n samples)', value=100)
+        n_samples = st.number_input('Sample size (people)', value=100)
 
         # ============== Setup placeholder chart =============== #
         res = []
@@ -122,18 +127,21 @@ def main():
         
 
     elif nav == 1: ############ PART II ############
-
+        st.header("Testing with Variations") 
+        st.image("img/ab_traffic_bw.JPG", width = 700)
+        st.write('When we measure the click-through rate of these two variations, we can calculate the observed conversion.')
+        st.write('When we simulate the true conversion rates, how frequently does the outcome represent the data?')
 
         # ================== AB Test Sliders  ================== #
         col1, col2 = st.beta_columns([1, 1]) # first column 1x the size of second
 
         with col1: 
             st.header("📺 Variation A")   
-            a_conversion = st.slider('True Conversion Rate',0., 1., 0.20)
+            a_conversion = st.slider('True Conversion Rate',0., 1., 0.32)
 
         with col2:
             st.header("📺 Variation B")
-            b_conversion = st.slider('True Conversion Rate',0., 1., 0.48)
+            b_conversion = st.slider('True Conversion Rate',0., 1., 0.36)
         st.write('')
         st.write('')
 
@@ -232,6 +240,60 @@ def main():
     
     elif nav == 2: ######## PART III ############    
         st.text('part 3')
+        st.text('The average number of false positives')
+
+        # ================== AB Test Sliders  ================== #
+        col1, col2 = st.beta_columns([1, 1])
+
+        with col1: 
+            st.header("📺 Variation A")   
+            a_conversion = st.slider('True Conversion Rate',0., 1., 0.32)
+
+        with col2:
+            st.header("📺 Variation B")
+            b_conversion = st.slider('True Conversion Rate',0., 1., 0.36)
+
+        # Simulate outcomes to find false positive rate
+        
+        n_samples = st.number_input('Samples', 1000)
+        n_experiments = st.number_input('Iterations (how many times to run the experiment?)', min_value=0, max_value=1000, value=100)
+        simulations = st.number_input('Simulations (n × iterations)', min_value=0, max_value=1000, value=20)
+
+        run_p3 = st.checkbox('Run')
+        x = []    
+        res_a, res_b = [], []
+
+        if run_p3: 
+            for i in range(simulations):
+                res_a, res_b = [], []
+                for j in range(n_experiments):
+                    A = [random() for x in range(n_samples)]
+                    B = [random() for x in range(n_samples)]
+                    df = pd.DataFrame()
+                    df['A'] = pd.Series(A)
+                    df['A_conv'] = (df['A']>(1-a_conversion)).astype(int)
+                    df['B'] = pd.Series(B)
+                    df['B_conv'] = (df['B']>(1-b_conversion)).astype(int)
+                    res_a.append(df.A_conv.mean())
+                    res_b.append(df.B_conv.mean())
+
+                dx = pd.DataFrame()
+                dx[f'A_res'] = pd.Series(res_a)
+                dx[f'B_res'] = pd.Series(res_b)
+                x.append(dx[dx['B_res'] < dx['A_res']].shape[0])
+
+            res = pd.Series(x)
+            st.code(f'Given that we observe\n\tA_conversion = {a_conversion}\n\tB_conversion = {b_conversion}\n\t\twith n={n_samples} samples each\n\navg. over {simulations} simulations..\n')
+            st.code(f'\tChance of A outperforming B: {res.mean():0.2f}% (false positives)\n')
+
+
+            if res.shape[0] >1:
+                annotated_text("Chance of A outperforming B 👩‍🔬  ", 
+                            (f'{res.mean():0.2f}%',
+                             f"(false positives)\n", "#fea"))
+
+            #sns.distplot(res)
+            st.write('Output can be verified at https://abtestguide.com/bayesian/')
 
     # Mandatory to avoid rollbacks with widgets, must be called at the end of app
     state.sync()
