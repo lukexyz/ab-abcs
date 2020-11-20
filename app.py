@@ -51,7 +51,7 @@ def main():
         st.write('In an AB test we want to measure the rate of an event happening. However we only observe the outcomes of an experiment, not the ground truth behind it. ')
         st.write('For example, we may observe that 4/10 visitors click a button. How many clicks would we expect with 100 visitors?')
         
-        st.header('🎲 Random Click Generator')
+        st.header('🎲 Random A-Test Generator')
         conversion_rate = st.number_input('True Conversion Rate', value=0.2)
         n_samples = st.number_input('Sample size (people)', value=100)
 
@@ -122,6 +122,7 @@ def main():
         if df.shape[0] >1:
             annotated_text("Simulation Observation 👩‍🔬  ", 
                         (result_text_1, f"{len(results_yes)}/{df.shape[0]} converted", "#fea"))
+            st.code('> central limit theorem')
 
         
 
@@ -238,9 +239,11 @@ def main():
             st.text(f"Simulation failures: {d_res[d_res['B_Conv'] < d_res['A_Conv']].shape[0]}/{n_experiments} (false positives)")
     
     elif nav == 2: ######## PART III ############    
-        st.write('Part 3: Simulating statistical significance.')
+        st.header('Part 3: Statistical Significance')
         st.write('P-value calculations assume that the null hypothesis is true and use that assumption to determine the likelihood of obtaining your observed sample data.')
-        st.write('In simpler terms, the P-value is the probability of the result being a winner.')
+        st.warning("Given the null hypothesis (no difference except random variation), what is the likelihood that we would see these results?")
+        st.write('In simpler terms, the P-value measures the probability of the result being a winner.')
+        st.write('The P-value is the false positive probability.')
         st.info('The P-value tells you how much you can trust the result.')
         st.write('In our simulation, how many times do false positives occur?')
 
