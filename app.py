@@ -47,7 +47,7 @@ def main():
 
         st.header('👩‍🔬 Exploring Intuitions Around AB Testing')
         st.write('Testing whether an event has happened, is as simple as tracking whether a user clicks a button.')
-        st.image("img/click.JPG", width = 700)
+        # st.image("img/click.JPG", width = 700)
         st.write('In an AB test we want to measure the rate of an event happening. However we only observe the outcomes of an experiment, not the ground truth behind it. ')
         st.write('For example, we may observe that 4/10 visitors click a button. How many clicks would we expect with 100 visitors?')
         
@@ -129,7 +129,7 @@ def main():
     elif nav == 1: ############ PART II ############
         st.header("👩‍🔬 Testing with Variations") 
         st.write('In an AB test, we wish to compare the performance of two design variations with the same function.')
-        st.image("img/ab_traffic_bw.JPG", width = 700)
+        # st.image("img/ab_traffic_bw.JPG", width = 700)
         st.write('When we measure the click-through rate of these two variations, we can calculate the observed conversion.')
         st.write('When we simulate the true conversion rates, how frequently does the outcome represent the truth? By running the experiment numerous times, we see how many false positives occur.\n\n')
 
