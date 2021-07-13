@@ -138,11 +138,11 @@ def main():
 
         with col1: 
             st.header("📺 Variation A")   
-            a_conversion = st.slider('True Conversion Rate',0., 1., 0.32)
+            a_conversion = st.slider('True Conversion Rate', 0., 1., 0.32)
 
         with col2:
             st.header("📺 Variation B")
-            b_conversion = st.slider('True Conversion Rate',0., 1., 0.36)
+            b_conversion = st.slider('True Conversion Rate', 0., 1., 0.36)
         st.write('')
         st.write('')
 
@@ -165,8 +165,8 @@ def main():
         line_plot = st.altair_chart(lines+labels, use_container_width=True)
 
         # ==================== User inputs ==================== #
-        n_samples = st.number_input('Samples', min_value=0, max_value=5001, value=200)
-        n_experiments = st.number_input('Iterations (how many times to run the experiment?)', min_value=0, max_value=1000, value=20)
+        n_samples = st.number_input('Samples (i.e. number of customers)', min_value=0, max_value=5001, value=500)
+        n_experiments = st.number_input('Iterations (how many times to run the experiment?)', min_value=0, max_value=1000, value=50)
     
         res_a, res_b = [], []
 
@@ -243,8 +243,8 @@ def main():
         st.write('P-value calculations assume that the null hypothesis is true and use that assumption to determine the likelihood of obtaining your observed sample data.')
         st.warning("Given the null hypothesis (no difference except random variation), what is the likelihood that we would see these results?")
         st.write('In simpler terms, the P-value measures the probability of the result being a winner.')
-        st.info('The P-value is the false positive probability.')
-        st.write('In our simulation, how many times do false positives occur?')
+        st.info('👉 The P-value is the false positive probability.')
+        st.write('So in our generated simulation, how many times do false positives occur?')
 
         # ================== AB Test Sliders  ================== #
         col1, col2 = st.beta_columns([1, 1])
@@ -259,7 +259,7 @@ def main():
 
         # Simulate outcomes to find false positive rate
         
-        n_samples = st.number_input('Samples', 1000)
+        n_samples = st.number_input('Samples (i.e. number of customers)', 1000)
         n_experiments = st.number_input('Iterations (how many times to run the experiment?)', min_value=0, max_value=1000, value=100)
         simulations = st.number_input('Simulations (n × iterations)', min_value=0, max_value=1000, value=20)
 
