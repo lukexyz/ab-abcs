@@ -24,7 +24,7 @@ def main():
     state = st_state._get_state()
 
     # ==================== Nav Bar  ==================== #
-    if state.nav is None: state.nav = 1
+    if state.nav is None: state.nav = 0
     nav = state.nav
     part1, part2, part3 = st.beta_columns([1, 1, 1])
 
@@ -46,9 +46,9 @@ def main():
     if nav == 0:  ############ PART I ############
 
         st.header('👩‍🔬 Exploring Intuitions Around AB Testing')
-        st.write('Testing whether an event has happened, is as simple as tracking whether a user clicks a button.')
+        st.write('Testing whether an event has happened is as simple as tracking whether a user clicks a button.')
         # st.image("img/click.JPG", width = 700)
-        st.write('In an AB test we want to measure the rate of an event happening. However we only observe the outcomes of an experiment, not the ground truth behind it. ')
+        st.write('In an AB test we want to measure the true conversion rate of an event happening. However, we only observe the outcomes of an experiment, not the ground truth behind it. ')
         st.write('For example, we may observe that 4/10 visitors click a button. How many clicks would we expect with 100 visitors?')
         
         st.header('🎲 Random A-Test Generator')
@@ -243,8 +243,7 @@ def main():
         st.write('P-value calculations assume that the null hypothesis is true and use that assumption to determine the likelihood of obtaining your observed sample data.')
         st.warning("Given the null hypothesis (no difference except random variation), what is the likelihood that we would see these results?")
         st.write('In simpler terms, the P-value measures the probability of the result being a winner.')
-        st.write('The P-value is the false positive probability.')
-        st.info('The P-value tells you how much you can trust the result.')
+        st.info('The P-value is the false positive probability.')
         st.write('In our simulation, how many times do false positives occur?')
 
         # ================== AB Test Sliders  ================== #
@@ -268,27 +267,29 @@ def main():
         res_a, res_b = [], []
 
         if st.button('🔴 Run'):
-            for i in range(simulations):
-                res_a, res_b = [], []
-                for j in range(n_experiments):
-                    A = [random() for x in range(n_samples)]
-                    B = [random() for x in range(n_samples)]
-                    df = pd.DataFrame()
-                    df['A'] = pd.Series(A)
-                    df['A_conv'] = (df['A']>(1-a_conversion)).astype(int)
-                    df['B'] = pd.Series(B)
-                    df['B_conv'] = (df['B']>(1-b_conversion)).astype(int)
-                    res_a.append(df.A_conv.mean())
-                    res_b.append(df.B_conv.mean())
+            with st.spinner('Calculating...'):
 
-                dx = pd.DataFrame()
-                dx[f'A_res'] = pd.Series(res_a)
-                dx[f'B_res'] = pd.Series(res_b)
-                x.append(dx[dx['B_res'] < dx['A_res']].shape[0])
+                for i in range(simulations):
+                    res_a, res_b = [], []
+                    for j in range(n_experiments):
+                        A = [random() for x in range(n_samples)]
+                        B = [random() for x in range(n_samples)]
+                        df = pd.DataFrame()
+                        df['A'] = pd.Series(A)
+                        df['A_conv'] = (df['A']>(1-a_conversion)).astype(int)
+                        df['B'] = pd.Series(B)
+                        df['B_conv'] = (df['B']>(1-b_conversion)).astype(int)
+                        res_a.append(df.A_conv.mean())
+                        res_b.append(df.B_conv.mean())
 
-            res = pd.Series(x)
-            st.code(f'Given that we observe\n\tA_conversion = {a_conversion}\n\tB_conversion = {b_conversion}\n\t\twith n={n_samples} samples each\n\nCalculating the average number of false positives over {simulations} simulations..\n')
-            st.code(f'\tChance of A outperforming B: {res.mean():0.2f}% (false positives)\n')
+                    dx = pd.DataFrame()
+                    dx[f'A_res'] = pd.Series(res_a)
+                    dx[f'B_res'] = pd.Series(res_b)
+                    x.append(dx[dx['B_res'] < dx['A_res']].shape[0])
+
+                res = pd.Series(x)
+                st.code(f'Given that we observe\n\tA_conversion = {a_conversion}\n\tB_conversion = {b_conversion}\n\t\twith n={n_samples} samples each\n\nCalculating the average number of false positives over {simulations} simulations..\n')
+                st.code(f'\tChance of A outperforming B: {res.mean():0.2f}% (false positives)\n')
 
 
             if res.shape[0] >= 1:
