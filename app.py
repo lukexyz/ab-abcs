@@ -46,15 +46,13 @@ def main():
     if nav == 0:  ############ PART I ############
 
         st.header('👩‍🔬 Exploring Intuitions Around AB Testing')
-        st.write('Testing whether an event has happened is as simple as tracking whether a user clicks a button.')
-        # st.image("img/click.JPG", width = 700)
-        st.write('In an AB test we want to measure the true conversion rate of an event happening. However, we only observe the outcomes of an experiment, not the ground truth behind it. ')
-        st.write('For example, we may observe that 4/10 visitors click a button. How many clicks would we expect with 100 visitors?')
-        
-        st.header('🎲 Random A-Test Generator')
+        st.write('In AB testing we want to know how often an event occurs, and compare it against a competing design. In practice however, we can only observe the outcome of measuring an event, and not the true conversion rate behind it. ')
+        st.write('For example, we may observe that 2/10 visitors click a button. So how many clicks would we expect if we had 100 visitors? By generating random numbers we can simulate behaviour on our website.')
+
+        st.header('🎲 Random Click Generator')
         conversion_rate = st.number_input('True Conversion Rate', value=0.2)
         n_samples = st.number_input('Sample size (people)', value=100)
-
+    
         # ============== Setup placeholder chart =============== #
         res = []
         df = pd.DataFrame()
@@ -77,6 +75,9 @@ def main():
         scatter_plot = st.altair_chart(scatter | hist, use_container_width=True)
 
         if st.button('🔴 Run'):
+
+            st.code(f'if the random number is > {1-conversion_rate:0.2f}: \n\tthen the user clicks the button')
+
             for i in range(n_samples):
                 res.append(random())
                 df = pd.DataFrame()
@@ -117,14 +118,12 @@ def main():
 
             results_yes = df[df.converted=='Yes']
             results_no = df[df.converted=='No']
-            result_text_1 = f'Conversion Rate = {df.conv.mean():0.2f}'
+            result_text_1 = f'Observed Conversion Rate = {df.conv.mean():0.2f}'
+            st.info(f'True Conversion rate = {conversion_rate:0.2f}')
 
         if df.shape[0] >1:
-            annotated_text("Simulation Observation 👩‍🔬  ", 
-                        (result_text_1, f"{len(results_yes)}/{df.shape[0]} converted", "#fea"))
-            st.code('> central limit theorem')
-
-        
+            annotated_text("Simulation 👩‍🔬  ", 
+                        (result_text_1, f"{len(results_yes)}/{df.shape[0]} (random numbers > {1-conversion_rate:0.2f})", "#fea"))
 
     elif nav == 1: ############ PART II ############
         st.header("👩‍🔬 Testing with Variations") 
@@ -237,10 +236,10 @@ def main():
                             "False positives", "#fea"))
 
             st.text(f"Simulation failures: {d_res[d_res['B_Conv'] < d_res['A_Conv']].shape[0]}/{n_experiments} (false positives)")
-    
+
     elif nav == 2: ######## PART III ############    
         st.header('Part 3: Statistical Significance')
-        st.write('P-value calculations assume that the null hypothesis is true and use that assumption to determine the likelihood of obtaining your observed sample data.')
+        st.write('P-value calculations assume that the null hypothesis is true, and uses that assumption to determine the likelihood of obtaining your observed sample data.')
         st.warning("Given the null hypothesis (no difference except random variation), what is the likelihood that we would see these results?")
         st.write('In simpler terms, the P-value measures the probability of the result being a winner.')
         st.info('👉 The P-value is the false positive probability.')
@@ -298,7 +297,8 @@ def main():
                              f"(false positives)\n", "#fea"))
 
             #sns.distplot(res)
-            st.write('Output can be verified here \nhttps://abtestguide.com/calc/\n or here\nhttps://abtestguide.com/bayesian/')
+            st.write('Output can be verified [here](https://abtestguide.com/calc/) or [here](https://abtestguide.com/bayesian/).')
+
 
     # Mandatory to avoid rollbacks with widgets, must be called at the end of app
     state.sync()
